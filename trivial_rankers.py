@@ -6,7 +6,7 @@ class VoteAverageBasedRanker():
         self.movies = movies
         self.train_ratings = train_ratings
 
-    def rank(self, user: int, query_movie_ids: np.ndarray) -> np.ndarray:
+    def rank(self, user: int, query_movie_ids: np.ndarray, **kwargs) -> np.ndarray:
         return self.movies[self.movies['id'].isin(query_movie_ids)]['vote_average']
     
 class WeightedVoteBasedRanker():
@@ -19,5 +19,5 @@ class WeightedVoteBasedRanker():
         self.movies['weighted_vote'] = (v/(v+m) * r) + (m/(v+m) * c)
         self.train_ratings = train_ratings
 
-    def rank(self, user: int, query_movie_ids: np.ndarray) -> np.ndarray:
+    def rank(self, user: int, query_movie_ids: np.ndarray, **kwargs) -> np.ndarray:
         return self.movies[self.movies['id'].isin(query_movie_ids)]['weighted_vote']

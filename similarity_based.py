@@ -14,7 +14,7 @@ class OverviewBasedRanker():
         self.tfidf_matrix = tfidf.fit_transform(self.df['overview'])
         self.train_ratings = train_ratings
 
-    def rank(self, user:int, test_ids: np.ndarray) -> np.ndarray:
+    def rank(self, user:int, test_ids: np.ndarray, ratings_power=1) -> np.ndarray:
         train_movies = self.train_ratings[self.train_ratings['userId'] == user]
         train_movie_ratings = train_movies['rating']
         train_movie_ids = train_movies['movieId']
@@ -25,7 +25,7 @@ class OverviewBasedRanker():
         test_movies_tfidf = self.tfidf_matrix[test_movie_indices]
 
         sim = cosine_similarity(train_movies_tfidf, test_movies_tfidf)
-        adjusted_sim = train_movie_ratings.to_numpy().reshape(-1, 1) * sim
+        adjusted_sim = np.power(train_movie_ratings.to_numpy().reshape(-1, 1), ratings_power) * sim
 
         return np.sum(adjusted_sim, axis=0)
 
@@ -43,7 +43,7 @@ class KeywordsBasedRanker():
         self.cntvec_matrix = cntvec.fit_transform(self.df['keywords'])
         self.train_ratings = train_ratings
 
-    def rank(self, user:int, test_ids: np.ndarray) -> np.ndarray:
+    def rank(self, user:int, test_ids: np.ndarray, ratings_power=1) -> np.ndarray:
         train_movies = self.train_ratings[self.train_ratings['userId'] == user]
         train_movie_ratings = train_movies['rating']
         train_movie_ids = train_movies['movieId']
@@ -54,7 +54,7 @@ class KeywordsBasedRanker():
         test_movies_tfidf = self.cntvec_matrix[test_movie_indices]
 
         sim = cosine_similarity(train_movies_tfidf, test_movies_tfidf)
-        adjusted_sim = train_movie_ratings.to_numpy().reshape(-1, 1) * sim
+        adjusted_sim = np.power(train_movie_ratings.to_numpy().reshape(-1, 1), ratings_power) * sim
 
         return np.sum(adjusted_sim, axis=0)
 
@@ -74,7 +74,7 @@ class GenreBasedRanker():
         self.df = self.df.drop(columns=['genres'])
         self.train_ratings = train_ratings
 
-    def rank(self, user:int, test_ids: np.ndarray) -> np.ndarray:
+    def rank(self, user:int, test_ids: np.ndarray, ratings_power=1) -> np.ndarray:
         train_movies = self.train_ratings[self.train_ratings['userId'] == user]
         train_movie_ratings = train_movies['rating']
         train_movie_ids = train_movies['movieId']
@@ -85,14 +85,13 @@ class GenreBasedRanker():
         test_movies_genres = self.df.filter(regex='genre').to_numpy()[test_movie_indices]
 
         sim = cosine_similarity(train_movies_genres, test_movies_genres)
-        adjusted_sim = train_movie_ratings.to_numpy().reshape(-1, 1) * sim
+        adjusted_sim = np.power(train_movie_ratings.to_numpy().reshape(-1, 1), ratings_power) * sim
 
         return np.sum(adjusted_sim, axis=0)
 
 
 class CastBasedRanker():
     def __init__(self, movies: pd.DataFrame, train_ratings: pd.DataFrame):
-        stemmer = SnowballStemmer('english')
 
         self.df = movies[['id', 'title', 'cast']]
         self.df.loc[:, 'cast'] = self.df['cast'] \
@@ -102,7 +101,7 @@ class CastBasedRanker():
         self.cntvec_matrix = cntvec.fit_transform(self.df['cast'])
         self.train_ratings = train_ratings
 
-    def rank(self, user:int, test_ids: np.ndarray) -> np.ndarray:
+    def rank(self, user:int, test_ids: np.ndarray, ratings_power=1) -> np.ndarray:
         train_movies = self.train_ratings[self.train_ratings['userId'] == user]
         train_movie_ratings = train_movies['rating']
         train_movie_ids = train_movies['movieId']
@@ -113,14 +112,13 @@ class CastBasedRanker():
         test_movies_tfidf = self.cntvec_matrix[test_movie_indices]
 
         sim = cosine_similarity(train_movies_tfidf, test_movies_tfidf)
-        adjusted_sim = train_movie_ratings.to_numpy().reshape(-1, 1) * sim
+        adjusted_sim = np.power(train_movie_ratings.to_numpy().reshape(-1, 1), ratings_power) * sim
 
         return np.sum(adjusted_sim, axis=0)
 
 
 class CrewBasedRanker():
     def __init__(self, movies: pd.DataFrame, train_ratings: pd.DataFrame):
-        stemmer = SnowballStemmer('english')
 
         self.df = movies[['id', 'title', 'crew']]
         self.df.loc[:, 'crew'] = self.df['crew'] \
@@ -130,7 +128,7 @@ class CrewBasedRanker():
         self.cntvec_matrix = cntvec.fit_transform(self.df['crew'])
         self.train_ratings = train_ratings
 
-    def rank(self, user:int, test_ids: np.ndarray) -> np.ndarray:
+    def rank(self, user:int, test_ids: np.ndarray, ratings_power=1) -> np.ndarray:
         train_movies = self.train_ratings[self.train_ratings['userId'] == user]
         train_movie_ratings = train_movies['rating']
         train_movie_ids = train_movies['movieId']
@@ -141,7 +139,7 @@ class CrewBasedRanker():
         test_movies_tfidf = self.cntvec_matrix[test_movie_indices]
 
         sim = cosine_similarity(train_movies_tfidf, test_movies_tfidf)
-        adjusted_sim = train_movie_ratings.to_numpy().reshape(-1, 1) * sim
+        adjusted_sim = np.power(train_movie_ratings.to_numpy().reshape(-1, 1), ratings_power) * sim
 
         return np.sum(adjusted_sim, axis=0)
     
@@ -174,7 +172,7 @@ class SoupBasedRanker():
         self.cntvec_matrix = cntvec.fit_transform(self.df['soup'])
         self.train_ratings = train_ratings
 
-    def rank(self, user:int, test_ids: np.ndarray) -> np.ndarray:
+    def rank(self, user:int, test_ids: np.ndarray, ratings_power=1) -> np.ndarray:
         train_movies = self.train_ratings[self.train_ratings['userId'] == user]
         train_movie_ratings = train_movies['rating']
         train_movie_ids = train_movies['movieId']
@@ -185,6 +183,6 @@ class SoupBasedRanker():
         test_movies_tfidf = self.cntvec_matrix[test_movie_indices]
 
         sim = cosine_similarity(train_movies_tfidf, test_movies_tfidf)
-        adjusted_sim = train_movie_ratings.to_numpy().reshape(-1, 1) * sim
+        adjusted_sim = np.power(train_movie_ratings.to_numpy().reshape(-1, 1), ratings_power) * sim
 
         return np.sum(adjusted_sim, axis=0)
